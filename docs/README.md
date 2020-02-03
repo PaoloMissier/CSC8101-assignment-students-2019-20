@@ -19,12 +19,15 @@ ratingsURL = 'https://csc8101storageblob.blob.core.windows.net/datablobcsc8101/r
 ratings = spark.createDataFrame(pd.read_csv(ratingsURL))
 ```
 
-## Task 1 . [10 marks]
+## Task 1: build a recommendation model to predict movie ratings from users [20 marks]
 
-Produce a small-scale version of the ratings.csv file, by downsampling it so it includes 27,000 unique users, and _all ratings given by those users_. Important: you cannot simply randomly sample the ratings file, instead you need to create a set of users, sample 10% of them, and then collect all of their ratings from the _ratings_ dataset.
-Save this as a ```parquet```, a binary format that is much faster to load than csv.
+1. Using the full ```ratings``` dataset, train a recommender model using the ALS algorithm from the Spark MLlib library, which is [documented here](https://spark.apache.org/docs/latest/api/python/pyspark.ml.html#pyspark.ml.recommendation.ALS). Make sure you create separate training and test sets and measure your perfomenance on both,  using a RMSE performance metric.
+2. using a GridSearch strategy, tune the ```maxIter``` and ```regParam``` hyperparameters of the model. Experiment with various values of the parameters and report on the time spent in GridSearch as a function of the size of the parameter space (this is the product of the possible values for each of the parameters).
+Can you tune one parameter at a time? are their settings independent of each other?
 
-Call this ```ratings-small.parquet```.
+Report on your best performance and comment on any model overfitting issues you may have spotted.
+
+Hint: we are aware that a near-complete solution for part (1) is available from the Spark MLlib documentation:  [Spark doc for Collaborative Filtering](https://spark.apache.org/docs/latest/ml-collaborative-filtering.html). However be aware that the input data format may be different.
 
 ## Task 2 [5 marks]
 
@@ -37,16 +40,12 @@ Produce summary statistics from ```ratings-small```:
 
 (hint: explore the Databricks notebooks ```display()``` facility, [documented here](https://docs.databricks.com/notebooks/visualizations/index.html)
 
-## Task 3: build a recommendation model to predict movie ratings from users [20 marks]
+## Task 3. [10 marks]
 
-1. train a recommender model using the ALS algorithm from the Spark MLlib library, which is [documented here](https://spark.apache.org/docs/latest/api/python/pyspark.ml.html#pyspark.ml.recommendation.ALS). Make sure you create separate training and test sets and measure your perfomenance on both,  using a RMSE performance metric.
-2. using a GridSearch strategy, tune the ```maxIter``` and ```regParam``` hyperparameters of the model. Experiment with various values of the parameters and report on the time spent in GridSearch as a function of the size of the parameter space (this is the product of the possible values for each of the parameters).
-Can you tune one parameter at a time? are their settings independent of each other?
+Produce a small-scale version of the ratings.csv file, by downsampling it so it includes 27,000 unique users, and _all ratings given by those users_. Important: you cannot simply randomly sample the ratings file, instead you need to create a set of users, sample 10% of them, and then collect all of their ratings from the _ratings_ dataset.
+Save this as a ```parquet```, a binary format that is much faster to load than csv.
 
-Report on your best performance and comment on any model overfitting issues you may have spotted.
-
-Hint: we are aware that a near-complete solution for part (1) is available from the Spark MLlib documentation:  [Spark doc for Collaborative Filtering](https://spark.apache.org/docs/latest/ml-collaborative-filtering.html). However be aware that the input data format may be different.
-For part 
+Call this ```ratings-small.parquet```. This is the dataset you will use for the remainder of the couresework.
 
 ## Task 4: Generate a user-user network from the ratings dataset.  [15 marks]
 
