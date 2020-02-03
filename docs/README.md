@@ -55,130 +55,78 @@ In this task you create a representation of a graph of users, where each user is
 
 ## Task 5: Discover the connected components of the graph, and select the largest for the next task.
 
+Use the GraphFrames API to calculate the connected components of the graph.
+This is very simple to do as the ```connectedComponents()``` method will do all the work for you. 
+The method returns a list of nodes with the number of the component (0,1,...) they belong to.
+You now need to generate a representation of the subgraph containing the largest component. Save this graph to file as you will need it in the next task.
+
+Documentation:
+[GraphFrame examples Databricks:](https://docs.databricks.com/spark/latest/graph-analysis/graphframes/index.html)
+[GraphFrame Python API](https://graphframes.github.io/graphframes/docs/_site/api/python/index.html)
+
 ## Task 5: Implement the Girvan-Newman algorithm and apply it to the user graph you have created in Task 4.
 
 In this task you are required to analyse how the overall GN algorithm can be parallelised, at least in part, by distributing the computation over multiple workers using the MapReduce pattern.
+
+_Hint_: begin by creating a representation of the graph as an adjacency list
 
 You will then implement code to calculate the betweeness of each edge in the graph, being aware of which parts of your code will be executed on the driver (master), and which are run on workers. Correspondingly, you need to figure out which data can be sent to the workers and operated on in parallel, and how the final solution is collected on the driver.
 
 The result should be a function that takes the input graph and returns a list of edges sorted in decreasing order of their betweenness.
 
-Once you have this function, you will remove the top-K edges and report on how many communities are generated. 
-For this, 
+A very small test graph is given below for you to experiment with. Note that this is the same graph used in the lecture notes.
 
-The algorithm is described in the lecture notes. 
+Once you have working code, apply your method to the connected component graph that you produced in task 4.
+Looking at the resulting betweeness values, remove the top-K edges and report on how many communities are generated. 
 
-Also, for simplicity in the following tasks we also ignore the weights and 
+Report on the performance of your implementation and be prepared to discuss its scalability during the viva, considering your design choices for data distriubtion.
 
-Once we have the network, you will partition it into communities of users, so that users who have rated many of the same movies will likely belong to the same community.
-You will implement a distributed version of the well-known Girwan-Newman (GN) algorithm for community detecteion, using a library for computing SSSP (single-source-shortest-path). The SSSP algorithm is sequential but you should do your best to parallelise the multiple invocations that are required to realise GN.
+**Important:** this implementation can be time-consuming and rather tricky. If you prefer, you may request to use a ready-made partial implementation (that is, the worker code) so all you have to do is figure out how to distribute data to the workers and combine the partial results on the driver. 50% of the marks for this task are taken from your total marks if you choose this option.
 
-The exercise ends with an analysis of the communities found in the previous step. You may be required to run the same algorithm on a different dataset to see the differences. Please see specific instructions in the template notebooks. 
+_Sample graph for testing your GN implementation_
 
-![assignment tasks summary](../resources/Coursework-tasks.png)
+```
+vertices = sqlContext.createDataFrame([
+  ("a", "Alice", 34),
+  ("b", "Bob", 36),
+  ("c", "Charlie", 30),
+  ("d", "David", 29),
+  ("e", "Esther", 32),
+  ("f", "Fanny", 36),
+  ("g", "Gabby", 60)], ["id", "name", "age"])
+```
 
-All programming is in Python for Spark and occurs using Databricks notebooks, attached to the shared Spark cluster provided for the module.
+```
+edges = sqlContext.createDataFrame([
+  ("a", "b", "friend"),
+  ("b", "a", "friend"),
+  ("a", "c", "friend"),  
+  ("c", "a", "friend"),
+  ("b", "c", "friend"),
+  ("c", "b", "friend"),
+  ("b", "d", "friend"),
+  ("d", "b", "friend"),
+  ("d", "e", "friend"),
+  ("e", "d", "friend"),
+  ("d", "g", "friend"),
+  ("g", "d", "friend"),
+  ("e", "f", "friend"),
+  ("f", "e", "friend"),
+  ("g", "f", "friend"),
+  ("f", "g", "friend"),
+  ("d", "f", "friend"),
+  ("f", "d", "friend")
+], ["src", "dst", "relationship"])
+```
+a GraphFrame representation of this graph is obtained simply as;
+```
+from graphframes import *
+g = GraphFrame(vertices, edges)
+```
 
-Details of each of the tasks are given below.
+Note; you will need to have installed the GraphFrame library on your cluster, by following these instructions:
 
-
-
-
-
-## Task 2: Build the user-user network.
-
-instructions: see notebook: **task2-template**
-
-## Task 3: Community detection.
-
-This task requires you to implement a version of the Girwan-Newman algorithm that is optimised to make use of multiple workers on the Spark clsuter.
-
-You are given a python module that operates on the graoh structure you generated in Task 2, and implements a number of functions to get you started.
-
-Using these methods, you will implement a version of GN that includes MapReduce patterns to *parallelise execution on the entire graph.*
-
-instructions: see notebook: **task3-template**
-
-## Task 4: Analysis of your community detection results.
-
-can you try and provide some insight into why the community detection algorithm may not have performed as expected?
-for this, you may want to go back to your raw and intermediate datasets and run some summary statistics and basic analytics:
-for instance: is this a dense/sparse set of ratings? what is the average number of ratings per user? how are users connected in the user-user network?
-
-
-
-## Details on of the Data Structures used in the assignment
-
-**Graph**
-
-This is a class you can import:
-
-`from comscan.model.graph import Graph`
-
-List of edges. It is loaded in memory as an adjacency list.
-
-    [(source_node, target_node, weight)]
-    
-    source,target,weight
-    1,6,1
-    1,8,1
-    2,3,1
-    2,4,1
-
-Note: in Task 4, each of your workers require a copy of the entire graph to compute on. You will need to use a `broadcast variable` to hold the graph instance
-
-**Paths**
-
-    {target: [path]}
-    path = [node]
-
-    {1: [[1]], 2: [[1, 2], [1, 3, 2]], 3: [[1, 3]], 4: [[1, 2, 4], [1, 3, 2, 4]], 5: [[1, 2, 4, 5], [1, 3, 2, 4, 5]], 6: [[1, 2, 4, 6], [1, 3, 2, 4, 6], [1, 2, 4, 5, 6], [1, 3, 2, 4, 5, 6], [1, 2, 4, 7, 6], [1, 3, 2, 4, 7, 6]], 7: [[1, 2, 4, 7], [1, 3, 2, 4, 7]], 8: []}
-
-
-**Shortest Paths**
-
-This RDD holds the result from an invocation of the SSSP algorithm:
-
-    shortest_paths_rdd -> [(source, paths)]
-    paths -> {target: [shortest_path]}
-    shortest_path -> [node]
-    source -> int
-    target -> int
-    node -> int
-
-    [(1,
-      {
-       1: [[1]],
-       2: [[1, 6, 2], [1, 8, 2]],
-       3: [[1, 6, 2, 3], [1, 8, 2, 3], [1, 6, 4, 3]],
-       4: [[1, 6, 4]],
-       5: [[1, 6, 2, 5], [1, 8, 2, 5], [1, 8, 7, 5]]
-      }
-     )
-    ]
-
-**Betweenness**:
-
-A  Dictionary of edges and their betweenness value (float) as generated based on one SSSP invocation, i.e., these will be _partial_ betweeness values
-
-    {egdge: betweennes_value}
-    
-    {(1, 2): 2.5, (5, 6): 0.3333333333333333, (4, 7): 1.3333333333333333, (1, 3): 3.5, (2, 3): 2.5, (4, 6): 0.3333333333333333, (4, 5): 1.3333333333333333, (6, 7): 0.3333333333333333, (2, 4): 4.0}
-
-
-**Communities**:
-
-Set of node ids
-
-    {node}
-    {1,2,3} 
-
-**Components**:
-
-Each connected component in the graph is partitioned into communities. This is represented as:
-
-    (community)
-    ({1, 2, 3}, {4, 6}, {5}, {7}, {8})
+from the Cluster Databricks UI, click on "libraries" -- install new --> Library source: Maven --> Coordinates / search packages "graphframes". select the package and confirm "install"
 
 
 ## References
