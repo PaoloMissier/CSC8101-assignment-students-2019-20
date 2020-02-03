@@ -18,31 +18,32 @@ import pandas as pd
 ratingsURL = 'https://csc8101storageblob.blob.core.windows.net/datablobcsc8101/ratings.csv'
 ratings = spark.createDataFrame(pd.read_csv(ratingsURL))
 ```
+## Task 1 [5 marks]
 
-## Task 1: build a recommendation model to predict movie ratings from users [20 marks]
+Produce summary statistics from the ```ratings``` dataset:
+
+- average number of ratings per users
+- average number of ratings per movie
+- histogram showing the distribution of movie ratings per user
+- histogram showing the distribution of movie ratings per movie
+(- others that you think may be informative, in view of the use of an algorithm that deals with sparsity in the user-item matrix)
+
+(hint: explore the Databricks notebooks ```display()``` facility, [documented here](https://docs.databricks.com/notebooks/visualizations/index.html)
+
+## Task 2: build a recommendation model to predict movie ratings from users [20 marks]
 
 1. Using the full ```ratings``` dataset, train a recommender model using the ALS algorithm from the Spark MLlib library, which is [documented here](https://spark.apache.org/docs/latest/api/python/pyspark.ml.html#pyspark.ml.recommendation.ALS). Make sure you create separate training and test sets and measure your perfomenance on both,  using a RMSE performance metric.
-2. using a GridSearch strategy, tune the ```maxIter``` and ```regParam``` hyperparameters of the model. Experiment with various values of the parameters and report on the time spent in GridSearch as a function of the size of the parameter space (this is the product of the possible values for each of the parameters).
+
+2. using a GridSearch strategy, tune the ```rank``` and ```regParam``` hyperparameters of the model. Experiment with various values of the parameters and report on the time spent in GridSearch as a function of the size of the parameter space (this is the product of the possible values for each of the parameters).
 Can you tune one parameter at a time? are their settings independent of each other?
 
 Report on your best performance and comment on any model overfitting issues you may have spotted.
 
 Hint: we are aware that a near-complete solution for part (1) is available from the Spark MLlib documentation:  [Spark doc for Collaborative Filtering](https://spark.apache.org/docs/latest/ml-collaborative-filtering.html). However be aware that the input data format may be different.
 
-## Task 2 [5 marks]
-
-Produce summary statistics from ```ratings-small```:
-
-- average number of ratings per users
-- average number of ratings per movie
-- histogram showing the distribution of movie ratings per user
-- histogram showing the distribution of movie ratings per movie
-
-(hint: explore the Databricks notebooks ```display()``` facility, [documented here](https://docs.databricks.com/notebooks/visualizations/index.html)
-
 ## Task 3. [10 marks]
 
-Produce a small-scale version of the ratings.csv file, by downsampling it so it includes 27,000 unique users, and _all ratings given by those users_. Important: you cannot simply randomly sample the ratings file, instead you need to create a set of users, sample 10% of them, and then collect all of their ratings from the _ratings_ dataset.
+Produce a small-scale version of the ```ratings.csv``` file, by downsampling it so it includes 27,000 unique users, and _all ratings given by those users_. Note that you cannot simply randomly sample the ratings file, instead you need to create a set of users, sample 10% of them, and then collect all of their ratings from the _ratings_ dataset.
 Save this as a ```parquet```, a binary format that is much faster to load than csv.
 
 Call this ```ratings-small.parquet```. This is the dataset you will use for the remainder of the couresework.
@@ -83,9 +84,9 @@ Report on the performance of your implementation and be prepared to discuss its 
 ## Bonus task (for extra marks)
 Apply your algorithm to the _full_ ```ratings``` dataset and discuss its performance and scalability properties.
 
-**Important:** this implementation can be time-consuming and rather tricky. If you prefer, you may request to use a ready-made partial implementation (that is, the worker code) so all you have to do is figure out how to distribute data to the workers and combine the partial results on the driver. 50% of the marks for this task are taken from your total marks if you choose this option.
+**Important:** this implementation can be time-consuming and rather tricky. If you prefer, you may request to use a ready-made partial implementation (that is, the workers code) so all you have to do is figure out how to distribute data to the workers and combine the partial results on the driver. _50% of the marks for this task are deducted from your total marks if you choose this option._
 
-_Sample graph for testing your GN implementation_
+### Sample graph for testing your GN implementation.
 
 ```
 vertices = sqlContext.createDataFrame([
@@ -120,7 +121,7 @@ edges = sqlContext.createDataFrame([
   ("f", "d", "friend")
 ], ["src", "dst", "relationship"])
 ```
-a GraphFrame representation of this graph is obtained simply as;
+a GraphFrame representation of this graph is obtained simply as:
 ```
 from graphframes import *
 g = GraphFrame(vertices, edges)
