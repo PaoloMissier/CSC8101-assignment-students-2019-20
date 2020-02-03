@@ -1,5 +1,57 @@
 # CSC8101 2019-20 Coursework assignment
 
+This coursework uses the [Movielens 20M](https://grouplens.org/datasets/movielens/20m/) dataset, specifically the ```ratings``` dataset which contains 20,000,263 records. Each record is a movie rating with the following schema:
+
+ |-- userId: integer (nullable = true)
+ |-- movieId: integer (nullable = true)
+ |-- rating: double (nullable = true)
+ |-- timestamp: integer (nullable = true)
+ 
+There are 138,493 unique users, and 26,744 unique movies.
+ 
+The dataset is available on an Azure Blob store. For convenience, here is Spark code to load the dataset:
+
+```
+import pandas as pd
+ratingsURL = 'https://csc8101storageblob.blob.core.windows.net/datablobcsc8101/ratings.csv'
+ratings = spark.createDataFrame(pd.read_csv(ratingsURL))
+```
+
+## Task 1
+
+Produce a small-scale version of the ratings.csv file, by downsampling it so it includes 27,000 unique users, and _all ratings given by those users_. Important: you cannot simply randomly sample the ratings file, instead you need to create a set of users, sample 10% of them, and then collect all of their ratings from the _ratings_ dataset.
+Save this as a ```parquet```, a binary format that is much faster to load than csv.
+
+Call this ```ratings-small.parquet```.
+
+## Task 2
+
+Produce summary statistics from ```ratings-small```:
+
+- average number of ratings per users
+- average number of ratings per movie
+- histogram showing the distribution of movie ratings per user
+- histogram showing the distribution of movie ratings per movie
+
+(hint: explore the Databricks notebooks ```display()``` facility, [documented here](https://docs.databricks.com/notebooks/visualizations/index.html)
+
+## Task 3: build a recommendation model to predict movie ratings from users 
+
+1. train a recommender model using the ALS algorithm from the Spark MLlib library, which is [documented here](https://spark.apache.org/docs/latest/api/python/pyspark.ml.html#pyspark.ml.recommendation.ALS). Make sure you create separate training and test sets and measure your perfomenance on both,  using a RMSE performance metric.
+2. using a GridSearch strategy, tune the ```maxIter``` and ```regParam``` hyperparameters of the model. Experiment with various values of the parameters and report on the time spent in GridSearch as a function of the size of the parameter space (this is the product of the possible values for each of the parameters).
+Can you tune one parameter at a time? are their settings independent of each other?
+
+Report on your best performance and comment on any model overfitting issues you may have spotted.
+
+3. *Optional*: apply your model to 
+Hint: we are aware that a near-complete solution for part (1) is available from the Spark MLlib documentation:  [Spark doc for Collaborative Filtering](https://spark.apache.org/docs/latest/ml-collaborative-filtering.html). However be aware that the input data format may be different.
+For part 
+
+
+teYou may refer to the example code on the;
+- report 
+- after you build the model, you need to add code to automatically optimise the *rank* hyperparameter, usiong RMSE as your performance metric. Report your best results in the notebook.
+
 This is about building models for providing movie recommendations. 
 We use the ALS algorithm (see lecture notes) with explicit movie ratings.
 We use the entire movielens dataset. 
@@ -19,22 +71,9 @@ All programming is in Python for Spark and occurs using Databricks notebooks, at
 
 Details of each of the tasks are given below.
 
-## The MovieLens dataset
-The original datasets are [here](https://grouplens.org/datasets/movielens/).
 
-The dataset comes in two sizes:
-- small, for code debugging purposes. Download and inspect from [here](data/ml-latest-small.zip).
-   this contains 100,000 ratings applied to 9,000 movies by 600 users. Last updated 9/2018.
-- large, for testing your actual models: 20 million ratings applied to 27,000 movies by 138,000 users. 
-   This has been uploaded to the cluster data store for you.
-   
-You will be using only one of the files in the dataset: **ratings.csv**.  The large version on the cluster has been stored as a parquet file, a binary format for Spark dataframes that is much faster to load than csv.
 
-## Task 1: build a global recommendation model
 
-- Start from the **task1** notebook provided (including loading  **ratings.paquet** into a dataframe
-- train a recommender model using the ALS approach. You may refer to the example code on the [Spark doc for Collaborative Filtering](https://spark.apache.org/docs/latest/ml-collaborative-filtering.html). However be aware that the input data format may be different
-- after you build the model, you need to add code to automatically optimise the *rank* hyperparameter, usiong RMSE as your performance metric. Report your best results in the notebook.
 
 ## Task 2: Build the user-user network.
 
