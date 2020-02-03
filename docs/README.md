@@ -2,11 +2,13 @@
 
 This coursework uses the [Movielens 20M](https://grouplens.org/datasets/movielens/20m/) dataset, specifically the ```ratings``` dataset which contains 20,000,263 records. Each record is a movie rating with the following schema:
 
+```
  |-- userId: integer (nullable = true)
  |-- movieId: integer (nullable = true)
  |-- rating: double (nullable = true)
  |-- timestamp: integer (nullable = true)
- 
+```
+
 There are 138,493 unique users, and 26,744 unique movies.
  
 The dataset is available on an Azure Blob store. For convenience, here is Spark code to load the dataset:
@@ -43,23 +45,31 @@ Can you tune one parameter at a time? are their settings independent of each oth
 
 Report on your best performance and comment on any model overfitting issues you may have spotted.
 
-3. *Optional*: apply your model to 
 Hint: we are aware that a near-complete solution for part (1) is available from the Spark MLlib documentation:  [Spark doc for Collaborative Filtering](https://spark.apache.org/docs/latest/ml-collaborative-filtering.html). However be aware that the input data format may be different.
 For part 
 
+## Task 4: Generate a user-user network from the ratings dataset.
 
-teYou may refer to the example code on the;
-- report 
-- after you build the model, you need to add code to automatically optimise the *rank* hyperparameter, usiong RMSE as your performance metric. Report your best results in the notebook.
+The ratings dataset may be viewed as a user-movies matrix, where each cell is a rating (with a timestamp).
+In this task you create a representation of a graph of users, where each user is represented by a node, and there is an edge between two users u1, u2 if u1 and u2 have rated the same movie. The *weight* of the edge is the number of the same movies that have both rated. Note that for simplicity here we ignore the values of the ratings. 
 
-This is about building models for providing movie recommendations. 
-We use the ALS algorithm (see lecture notes) with explicit movie ratings.
-We use the entire movielens dataset. 
+## Task 5: Discover the connected components of the graph, and select the largest for the next task.
 
-However, building the model out of the dataset is only one of the tasks. 
-Please refer to the figure below.
+## Task 5: Implement the Girvan-Newman algorithm and apply it to the user graph you have created in Task 4.
 
-The second task is to create a user-user network from the user-movie-ratings (U-M-R) matrix from the movielens dataset, i.e., where each user is represented by a node, and there is an edge between two users u1, u2 if u1 and u2 have rated the same movie. The *weight* of the edge is the number of the same movies that have both rated. Note that for simplicity here we ignore the values of the ratings. 
+In this task you are required to analyse how the overall GN algorithm can be parallelised, at least in part, by distributing the computation over multiple workers using the MapReduce pattern.
+
+You will then implement code to calculate the betweeness of each edge in the graph, being aware of which parts of your code will be executed on the driver (master), and which are run on workers. Correspondingly, you need to figure out which data can be sent to the workers and operated on in parallel, and how the final solution is collected on the driver.
+
+The result should be a function that takes the input graph and returns a list of edges sorted in decreasing order of their betweenness.
+
+Once you have this function, you will remove the top-K edges and report on how many communities are generated. 
+For this, 
+
+The algorithm is described in the lecture notes. 
+
+Also, for simplicity in the following tasks we also ignore the weights and 
+
 Once we have the network, you will partition it into communities of users, so that users who have rated many of the same movies will likely belong to the same community.
 You will implement a distributed version of the well-known Girwan-Newman (GN) algorithm for community detecteion, using a library for computing SSSP (single-source-shortest-path). The SSSP algorithm is sequential but you should do your best to parallelise the multiple invocations that are required to realise GN.
 
