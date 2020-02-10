@@ -43,7 +43,7 @@ Hint: we are aware that a near-complete solution for part (1) is available from 
 
 ## Task 3. [10 marks]
 
-Produce a small-scale version of the ```ratings.csv``` file, by downsampling it so it includes 27,000 unique users, and _all ratings given by those users_. Note that you cannot simply randomly sample the ratings file, instead you need to create a set of users, sample 10% of them, and then collect all of their ratings from the _ratings_ dataset.
+Produce a small-scale version of the ```ratings.csv``` file, by downsampling it so it includes 27,000 unique users, and _all ratings given by those users_. Note that you cannot simply randomly sample the ratings file, instead you need to create a set of users, sample 27,000, and then collect all of their ratings from the _ratings_ dataset.
 Save this as a ```parquet```, a binary format that is much faster to load than csv.
 
 Call this ```ratings-small.parquet```. This is the dataset you will use for the remainder of the couresework.
@@ -52,6 +52,12 @@ Call this ```ratings-small.parquet```. This is the dataset you will use for the 
 
 The ratings dataset may be viewed as a user-movies matrix, where each cell is a rating (with a timestamp).
 In this task you create a representation of a graph of users, where each user is represented by a node, and there is an edge between two users u1, u2 if u1 and u2 have rated the same movie. The *weight* of the edge is the number of the same movies that have both rated. Note that for simplicity here we ignore the values of the ratings. 
+
+**Added 10/2/2020: threshold the weights to reduce the overall connectivity**
+
+The graph you will generate is likely to have 1 or max 2 connected components, i.e., include the entire graph.
+this is because weights are being ignored.
+To alleviate this, think of a criterion you can use to prune low-weight edges. This can be a fixed threshold, or one determined in the basis of the weights distribution. Make sure you end up with >2 significant connected components as a result of this additional operation, and be prepared to discuss your solution during the viva.
 
 ## Task 5: Discover the connected components of the graph, and select the largest for the next task.  [5 marks]
 
