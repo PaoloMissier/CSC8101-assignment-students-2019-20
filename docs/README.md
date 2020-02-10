@@ -74,7 +74,9 @@ Documentation:
 
 In this task you are required to analyse how the overall GN algorithm can be parallelised, at least in part, by distributing the computation over multiple workers using the MapReduce pattern.
 
-_Hint_: begin by creating a representation of the graph as an adjacency list
+_Hint_: begin by creating a representation of the graph as an adjacency list. **there is no need to use the GraphFrame representation of the graph**
+
+also, for the purpose of calculating betweenness **you can assume all edges have equal weight.** 
 
 You will then implement code to calculate the betweeness of each edge in the graph, being aware of which parts of your code will be executed on the driver (master), and which are run on workers. Correspondingly, you need to figure out which data can be sent to the workers and operated on in parallel, and how the final solution is collected on the driver.
 
