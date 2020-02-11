@@ -53,7 +53,7 @@ Call this ```ratings-small.parquet```. This is the dataset you will use for the 
 The ratings dataset may be viewed as a user-movies matrix, where each cell is a rating (with a timestamp).
 In this task you create a representation of a graph of users, where each user is represented by a node, and there is an edge between two users u1, u2 if u1 and u2 have rated the same movie. The *weight* of the edge is the number of the same movies that have both rated. Note that for simplicity here we ignore the values of the ratings. 
 
-**Added 10/2/2020: threshold the weights to reduce the overall connectivity**
+**Added 10/2/2020: consider thresholding the weights to reduce the overall connectivity**
 
 The graph you will generate is likely to have 1 or max 2 connected components, i.e., include the entire graph.
 this is because weights are being ignored.
@@ -64,7 +64,9 @@ To alleviate this, think of a criterion you can use to prune low-weight edges. T
 Use the GraphFrames API to calculate the connected components of the graph.
 This is very simple to do as the ```connectedComponents()``` method will do all the work for you. 
 The method returns a list of nodes with the number of the component (0,1,...) they belong to.
-You now need to generate a representation of the subgraph containing the largest component. Save this graph to file as you will need it in the next task.
+
+You now need to generate a representation of the subgraph containing the largest component, which you will use in task 6.
+Note that the vertices and edges of a Graph are just dataframes, so they can each be saved and then retrieved as .parquet files.
 
 Documentation:
 [GraphFrame examples Databricks:](https://docs.databricks.com/spark/latest/graph-analysis/graphframes/index.html)
@@ -73,6 +75,8 @@ Documentation:
 ## Task 6: Implement the Girvan-Newman algorithm and apply it to the user graph you have created in Task 4.  [50 marks]
 
 In this task you are required to analyse how the overall GN algorithm can be parallelised, at least in part, by distributing the computation over multiple workers using the MapReduce pattern.
+
+The input to this task is the subgraph you produced in *Task 5*, which contains the largest connected component out of the entire graph. If you have saved the graph to file as dataframes, you will reload it in memory now.
 
 _Hint_: begin by creating a representation of the graph as an adjacency list. **there is no need to use the GraphFrame representation of the graph**
 
