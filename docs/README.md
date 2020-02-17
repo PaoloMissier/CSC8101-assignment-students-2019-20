@@ -30,7 +30,7 @@ Produce summary statistics from the ```ratings``` dataset:
 
 (hint: explore the Databricks notebooks ```display()``` facility, [documented here](https://docs.databricks.com/notebooks/visualizations/index.html)
 
-## Task 2: build a recommendation model to predict movie ratings from users [20 marks]
+## Task 2: build a recommendation model to predict movie ratings from users [15 marks]
 
 1. Using the full ```ratings``` dataset, train a recommender model using the ALS algorithm from the Spark MLlib library, which is [documented here](https://spark.apache.org/docs/latest/api/python/pyspark.ml.html#pyspark.ml.recommendation.ALS). Make sure you create separate training and test sets and measure your perfomenance on both,  using a RMSE performance metric.
 
